@@ -288,17 +288,18 @@ class FundusAnalyzer:
             # No randomness - predictions should be 100% consistent for the same image
             final_score = max(0, min(1, final_score))
             
-            # Adjust scoring to be more lenient toward "normal" predictions
-            # by applying a bias against myopia predictions
-            # This will result in fewer myopia detections
-            myopia_bias = 0.2  # Reduce myopia predictions by shifting scores down
-            final_score = max(0, min(1, final_score - myopia_bias))
+            # Make predictions more balanced and meaningful
+            # Instead of applying an arbitrary bias, we'll enhance the 
+            # discrimination based on actual features
             
-            # Adjust contrast to make predictions more decisive
-            if final_score > 0.5:
-                final_score = 0.5 + (final_score - 0.5) * 1.2
-            else:
-                final_score = 0.5 - (0.5 - final_score) * 1.8  # Stronger push toward normal
+            # Adjust the sensitivity to key clinical features
+            # This focuses prediction on the most reliable indicators
+            if scores['vessel_tortuosity'] > 0.65 and scores['periphery_thinning'] > 0.6:
+                # Both vessel and periphery indicators strongly suggest myopia
+                final_score = 0.5 + (final_score - 0.5) * 1.25
+            elif scores['optic_disc_size'] < 0.3 and scores['vessel_tortuosity'] < 0.4:
+                # Both optic disc and vessel indicators suggest normal
+                final_score = 0.5 - (0.5 - final_score) * 1.25
                 
             final_score = max(0.1, min(0.9, final_score))  # Limit range for better confidence values
             
@@ -406,8 +407,8 @@ def predict(model, preprocessed_image):
         prediction_value = model.predict(preprocessed_image)
         
         # Convert to binary prediction and confidence
-        # Use a higher threshold (0.65) to reduce false positives for myopia
-        prediction_threshold = 0.65
+        # Use the standard threshold (0.5) for balanced predictions
+        prediction_threshold = 0.5
         binary_prediction = 1 if prediction_value >= prediction_threshold else 0
         confidence = prediction_value if binary_prediction == 1 else 1 - prediction_value
         
