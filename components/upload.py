@@ -14,6 +14,10 @@ def create_upload_section():
     st.title("Upload & Predict")
     st.markdown("### Upload fundus images for myopia detection")
     
+    # Initialize session state for tracking processed files
+    if 'processed_files' not in st.session_state:
+        st.session_state.processed_files = set()
+    
     # Image upload widget
     uploaded_files = st.file_uploader(
         "Upload one or more fundus images",
@@ -23,7 +27,24 @@ def create_upload_section():
     
     # Process uploaded images if any
     if uploaded_files:
+        # Create a list of newly uploaded files that haven't been processed yet
+        new_files = []
         for uploaded_file in uploaded_files:
+            # Generate a unique identifier for this file (name + size + last modified)
+            file_id = f"{uploaded_file.name}_{uploaded_file.size}"
+            
+            # Only process files we haven't seen before
+            if file_id not in st.session_state.processed_files:
+                new_files.append((uploaded_file, file_id))
+                # Mark this file as processed
+                st.session_state.processed_files.add(file_id)
+        
+        # Show message if all files have been processed already
+        if not new_files and uploaded_files:
+            st.info("All uploaded images have already been processed. Upload new images to analyze them.")
+        
+        # Process only new files
+        for uploaded_file, file_id in new_files:
             # Read file
             image_bytes = uploaded_file.getvalue()
             
@@ -37,7 +58,7 @@ def create_upload_section():
             st.image(image_bytes, caption=f"Uploaded: {uploaded_file.name}", width=300)
             
             # Process image and make prediction
-            with st.spinner("Analyzing image..."):
+            with st.spinner(f"Analyzing image: {uploaded_file.name}..."):
                 # Preprocess image
                 preprocessed_image = preprocess_image(image_bytes)
                 
@@ -72,7 +93,7 @@ def create_upload_section():
                         )
                         
                         if db_success:
-                            st.success("Prediction saved to database")
+                            st.success(f"Prediction for {uploaded_file.name} saved to database")
                         # Note: If db fails, we still have the prediction in session state
                         
                         # Display result
@@ -102,9 +123,9 @@ def create_upload_section():
                             conf_value = float(confidence) if confidence is not None else 0.0
                             st.success(f"✅ Normal eye detected with {conf_value*100:.1f}% confidence")
                     else:
-                        st.error("Error making prediction. Please try again.")
+                        st.error(f"Error making prediction for {uploaded_file.name}. Please try again.")
                 else:
-                    st.error("Error preprocessing image. Please try a different image.")
+                    st.error(f"Error preprocessing image {uploaded_file.name}. Please try a different image.")
     
     # Instructions and examples
     else:

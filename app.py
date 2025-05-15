@@ -33,6 +33,7 @@ if "app_version" not in st.session_state:
     st.session_state.show_db_config = False
     st.session_state.db_url = None
     st.session_state.is_fresh_session = True
+    st.session_state.processed_files = set()  # Reset processed files on restart
 else:
     # Existing session, just make sure all variables exist
     if "uploaded_images" not in st.session_state:
@@ -53,6 +54,8 @@ else:
         st.session_state.db_url = None
     if "is_fresh_session" not in st.session_state:
         st.session_state.is_fresh_session = False
+    if "processed_files" not in st.session_state:
+        st.session_state.processed_files = set()
 
 # Load model
 @st.cache_resource
