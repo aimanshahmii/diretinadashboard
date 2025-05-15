@@ -5,6 +5,84 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import pandas as pd
+import urllib.parse
+import re
+
+def fix_supabase_url(url):
+    """
+    Fix common issues with Supabase connection strings.
+    
+    Args:
+        url: The original database URL
+        
+    Returns:
+        Fixed URL string
+    """
+    # First, detect if this is a pooler URL with the specific format we're seeing
+    if 'pooler.supabase' in url and '@' in url:
+        # This looks like: 
+        # postgresql://postgres.urahevcropdwuyqqnpny:[@Weareyoung256]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
+        
+        # Split by @ symbols - we expect 2 of them
+        parts = url.split('@')
+        
+        if len(parts) >= 3:
+            # We have more than one @ symbol, so we need to carefully reconstruct
+            
+            # Extract protocol and username (before first colon)
+            protocol_user_part = parts[0]
+            if ':' in protocol_user_part:
+                protocol_user = protocol_user_part.split(':')[0]
+            else:
+                protocol_user = protocol_user_part
+                
+            # Extract password - everything between first : and second @, removing brackets
+            password_part = url.split(':', 1)[1].split('@', 1)[0]
+            password = password_part.replace('[', '').replace(']', '')
+            
+            # Extract host and the rest - everything after the last @
+            host_part = parts[-1]
+            
+            # Reconstruct with proper URL encoding for the password
+            encoded_password = urllib.parse.quote_plus(password)
+            fixed_url = f"{protocol_user}:{encoded_password}@{host_part}"
+            
+            # Add postgresql:// if it was stripped
+            if not fixed_url.startswith('postgresql://'):
+                fixed_url = 'postgresql://' + fixed_url
+                
+            return fixed_url
+            
+    # Default approach for simpler URLs
+    if '[' in url and ']' in url:
+        url = url.replace('[', '').replace(']', '')
+    
+    # Handle URLs with a more standard format
+    parts = re.split(r'(?<!\\)@', url)  # Split by @ but not \@
+    
+    if len(parts) == 2:
+        # Standard URL with one @ symbol
+        auth, rest = parts
+        if ':' in auth:
+            user, pwd = auth.rsplit(':', 1)
+            pwd = urllib.parse.quote_plus(pwd)
+            return f"{user}:{pwd}@{rest}"
+    
+    # If we couldn't parse it specially, at least encode any special chars
+    try:
+        parsed = urllib.parse.urlparse(url)
+        userinfo = parsed.netloc.split('@', 1)[0]
+        if ':' in userinfo:
+            username, password = userinfo.split(':', 1)
+            encoded_password = urllib.parse.quote_plus(password)
+            new_netloc = f"{username}:{encoded_password}@{parsed.netloc.split('@', 1)[1]}"
+            parsed = parsed._replace(netloc=new_netloc)
+            return urllib.parse.urlunparse(parsed)
+    except:
+        pass
+        
+    # If all special handling fails, return the original
+    return url
 
 # Create a base class for SQLAlchemy models
 Base = declarative_base()
@@ -71,34 +149,31 @@ def init_db():
             # Use SQLite for development when no DATABASE_URL is provided
             database_url = "sqlite:///memory:"
         
-        # For Supabase PostgreSQL connections, we need to make some adjustments
-        if 'supabase' in database_url.lower() or 'pgbouncer=true' in database_url.lower():
+        # For Supabase PostgreSQL connections, we need to fix the URL format
+        if 'supabase' in database_url.lower() or 'pooler.supabase' in database_url.lower():
             st.info("Detected Supabase PostgreSQL connection")
             
-            # Add required parameters for SQLAlchemy to work properly with pgbouncer
-            if '?' in database_url:
-                # There are already query parameters, add to them
-                database_url += "&prepare=true"
-            else:
-                # No query parameters yet, add the first one
-                database_url += "?prepare=true"
-
-            st.info("Using Supabase Transaction Pooler connection")
+            try:
+                # Parse and fix the Supabase URL with a specialized function
+                database_url = fix_supabase_url(database_url)
+                st.success("Successfully formatted Supabase connection string")
+            except Exception as e:
+                st.error(f"Error formatting database URL: {str(e)}")
+                st.info("You might need to manually format your DATABASE_URL properly")
             
         # Create engine with proper dialect options for PostgreSQL
         if 'postgresql' in database_url.lower():
-            # Connect with proper options for PostgreSQL
+            # Connect with minimal options for maximum compatibility
             engine = create_engine(
                 database_url,
-                connect_args={
-                    "options": "-c timezone=utc",
-                },
-                # Echo SQL for debugging
+                # Echo SQL for debugging during development
                 echo=True
             )
+            st.info(f"Connected to PostgreSQL database")
         else:
             # For other database types (e.g., SQLite)
             engine = create_engine(database_url)
+            st.info(f"Using SQLite database")
             
         Session = sessionmaker(bind=engine)
         
