@@ -340,7 +340,7 @@ def get_all_predictions(_show_messages=False):
         })
 
 # Function to add a patient to the database
-def add_patient(patient_id, name=None, age=None, gender=None):
+def add_patient(patient_id, name=None, age=None, gender=None, _show_messages=False):
     """
     Add a patient record to the database
     
@@ -349,12 +349,13 @@ def add_patient(patient_id, name=None, age=None, gender=None):
         name: Patient name (optional)
         age: Patient age (optional)
         gender: Patient gender (optional)
+        _show_messages: If True, show status messages
         
     Returns:
         True if successful, False otherwise
     """
     try:
-        db = init_db()
+        db = init_db(_show_messages=_show_messages)
         session = db['Session']()
         
         new_patient = Patient(
@@ -369,7 +370,8 @@ def add_patient(patient_id, name=None, age=None, gender=None):
         session.close()
         return True
     except Exception as e:
-        st.error(f"Error adding patient to database: {str(e)}")
+        if _show_messages:
+            st.error(f"Error adding patient to database: {str(e)}")
         return False
 
 # Function to get all patients from the database

@@ -47,8 +47,8 @@ def create_database_mgmt_section():
         with tab1:
             st.subheader("Prediction Records")
             
-            # Get all predictions
-            predictions_df = get_all_predictions()
+            # Get all predictions - show messages in this section
+            predictions_df = get_all_predictions(_show_messages=True)
             
             if not predictions_df.empty:
                 # Format the dataframe for display
@@ -112,14 +112,14 @@ def create_database_mgmt_section():
                             # Convert gender to None if it's empty
                             gender_value = gender if gender else None
                             
-                            success = add_patient(patient_id, name, age_value, gender_value)
+                            success = add_patient(patient_id, name, age_value, gender_value, _show_messages=True)
                             
                             if success:
                                 st.success(f"Patient {patient_id} added successfully")
                                 st.rerun()  # Refresh the page to show the new patient
             
-            # Get all patients
-            patients_df = get_all_patients()
+            # Get all patients - show messages in this section
+            patients_df = get_all_patients(_show_messages=True)
             
             if not patients_df.empty:
                 # Display the data
