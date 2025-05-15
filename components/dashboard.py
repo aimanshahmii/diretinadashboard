@@ -12,6 +12,12 @@ def create_dashboard():
     st.title("DiRetina Dashboard")
     st.markdown("### AI-powered Myopia Detection from Fundus Images")
     
+    # Show notification on fresh session
+    if st.session_state.get('is_fresh_session', False):
+        st.info("Dashboard metrics have been reset. Upload new images to see updated statistics.")
+        # Reset the flag so it doesn't show again in this session
+        st.session_state.is_fresh_session = False
+    
     # Top row with key metrics
     col1, col2, col3, col4 = st.columns(4)
     

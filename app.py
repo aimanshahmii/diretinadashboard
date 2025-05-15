@@ -19,23 +19,40 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state variables if they don't exist
-if "uploaded_images" not in st.session_state:
+# Initialize session state variables
+# Add version tracking to detect app restarts
+if "app_version" not in st.session_state:
+    # This is a new session or app restart, reset all session variables
+    st.session_state.app_version = "1.0"
     st.session_state.uploaded_images = []
-if "predictions" not in st.session_state:
     st.session_state.predictions = []
-if "prediction_history" not in st.session_state:
     st.session_state.prediction_history = []
-if "model" not in st.session_state:
     st.session_state.model = None
-if "training_data" not in st.session_state:
     st.session_state.training_data = None
-if "last_upload_time" not in st.session_state:
     st.session_state.last_upload_time = None
-if "show_db_config" not in st.session_state:
     st.session_state.show_db_config = False
-if "db_url" not in st.session_state:
     st.session_state.db_url = None
+    st.session_state.is_fresh_session = True
+else:
+    # Existing session, just make sure all variables exist
+    if "uploaded_images" not in st.session_state:
+        st.session_state.uploaded_images = []
+    if "predictions" not in st.session_state:
+        st.session_state.predictions = []
+    if "prediction_history" not in st.session_state:
+        st.session_state.prediction_history = []
+    if "model" not in st.session_state:
+        st.session_state.model = None
+    if "training_data" not in st.session_state:
+        st.session_state.training_data = None
+    if "last_upload_time" not in st.session_state:
+        st.session_state.last_upload_time = None
+    if "show_db_config" not in st.session_state:
+        st.session_state.show_db_config = False
+    if "db_url" not in st.session_state:
+        st.session_state.db_url = None
+    if "is_fresh_session" not in st.session_state:
+        st.session_state.is_fresh_session = False
 
 # Load model
 @st.cache_resource
