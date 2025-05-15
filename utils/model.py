@@ -288,13 +288,17 @@ class FundusAnalyzer:
             # No randomness - predictions should be 100% consistent for the same image
             final_score = max(0, min(1, final_score))
             
-            # For demonstration purposes, let's make it more decisive
-            # This increases the contrast between myopic and non-myopic predictions
-            # by pushing values away from 0.5
+            # Adjust scoring to be more lenient toward "normal" predictions
+            # by applying a bias against myopia predictions
+            # This will result in fewer myopia detections
+            myopia_bias = 0.2  # Reduce myopia predictions by shifting scores down
+            final_score = max(0, min(1, final_score - myopia_bias))
+            
+            # Adjust contrast to make predictions more decisive
             if final_score > 0.5:
-                final_score = 0.5 + (final_score - 0.5) * 1.5
+                final_score = 0.5 + (final_score - 0.5) * 1.2
             else:
-                final_score = 0.5 - (0.5 - final_score) * 1.5
+                final_score = 0.5 - (0.5 - final_score) * 1.8  # Stronger push toward normal
                 
             final_score = max(0.1, min(0.9, final_score))  # Limit range for better confidence values
             
@@ -402,7 +406,9 @@ def predict(model, preprocessed_image):
         prediction_value = model.predict(preprocessed_image)
         
         # Convert to binary prediction and confidence
-        binary_prediction = 1 if prediction_value >= 0.5 else 0
+        # Use a higher threshold (0.65) to reduce false positives for myopia
+        prediction_threshold = 0.65
+        binary_prediction = 1 if prediction_value >= prediction_threshold else 0
         confidence = prediction_value if binary_prediction == 1 else 1 - prediction_value
         
         return binary_prediction, float(confidence)
