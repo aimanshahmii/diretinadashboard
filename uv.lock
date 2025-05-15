@@ -1100,6 +1100,7 @@ dependencies = [
     { name = "sqlalchemy" },
     { name = "streamlit" },
     { name = "tensorflow" },
+    { name = "tensorflow-io-gcs-filesystem" },
 ]
 
 [package.metadata]
@@ -1114,6 +1115,7 @@ requires-dist = [
     { name = "sqlalchemy", specifier = ">=2.0.41" },
     { name = "streamlit", specifier = ">=1.45.1" },
     { name = "tensorflow", specifier = ">=2.14.0" },
+    { name = "tensorflow-io-gcs-filesystem", specifier = ">=0.37.1" },
 ]
 
 [[package]]

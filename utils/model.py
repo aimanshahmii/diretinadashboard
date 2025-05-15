@@ -7,10 +7,13 @@ import cv2
 import random
 from PIL import Image
 
+# Import our TensorFlow model
+from utils.tf_model import TensorFlowFundusModel
+
 class FundusAnalyzer:
     """
     A more sophisticated fundus image analyzer that looks for specific characteristics
-    associated with myopia in retinal images.
+    associated with myopia in retinal images. This is our fallback if TensorFlow is unavailable.
     """
     def __init__(self):
         st.info("DiRetina Analyzer initialized - analyzing fundus characteristics")
@@ -302,41 +305,71 @@ class FundusAnalyzer:
             # Return a mid-range value in case of error
             return 0.5
 
-def create_model():
+def create_model(use_tensorflow=True):
     """
-    Create an advanced fundus analyzer for myopia detection
+    Create a model for fundus image analysis
     
+    Args:
+        use_tensorflow: If True, use TensorFlow model, otherwise use traditional analyzer
+        
     Returns:
         A model that can analyze fundus images
     """
-    return FundusAnalyzer()
+    if use_tensorflow:
+        try:
+            return TensorFlowFundusModel()
+        except Exception as e:
+            st.error(f"Error creating TensorFlow model: {str(e)}. Falling back to traditional analyzer.")
+            return FundusAnalyzer()
+    else:
+        return FundusAnalyzer()
 
 def load_model():
     """
     Load or create the fundus analyzer model
     
     Returns:
-        A FundusAnalyzer instance
+        A model instance (either TensorFlow or traditional)
     """
     try:
-        st.info("Initializing DiRetina Advanced Fundus Analyzer")
-        model = create_model()
+        st.info("Initializing DiRetina TensorFlow-powered Fundus Analyzer")
         
-        # Display info about what we're analyzing
-        st.markdown("""
-        ### DiRetina Analyzer looks for these myopia indicators:
+        # Attempt to use TensorFlow model
+        model = create_model(use_tensorflow=True)
         
-        1. **Optic Disc Size**: Smaller optic disc can indicate myopia
-        2. **Blood Vessel Patterns**: Increased tortuosity in myopic eyes
-        3. **Peripheral Retinal Thinning**: Common in myopia
-        4. **Tigroid/Tessellated Appearance**: Characteristic pattern in myopic eyes
-        """)
+        # If we're using the TensorFlow model
+        if isinstance(model, TensorFlowFundusModel):
+            st.success("Using TensorFlow deep learning model for analysis")
+            
+            # Display info about the TensorFlow model
+            st.markdown("""
+            ### DiRetina TensorFlow Analysis Features:
+            
+            1. **Deep Neural Network Analysis**: Powered by MobileNetV2 architecture
+            2. **Transfer Learning**: Leverages pre-trained image recognition capabilities
+            3. **High Dimensional Feature Analysis**: Identifies complex patterns in fundus images
+            4. **Advanced Classification**: Uses deep learning for binary classification
+            """)
+        else:
+            # We're using the traditional model (fallback)
+            st.warning("Using traditional image analysis (TensorFlow unavailable)")
+            
+            # Display info about the traditional analysis
+            st.markdown("""
+            ### DiRetina Analyzer looks for these myopia indicators:
+            
+            1. **Optic Disc Size**: Smaller optic disc can indicate myopia
+            2. **Blood Vessel Patterns**: Increased tortuosity in myopic eyes
+            3. **Peripheral Retinal Thinning**: Common in myopia
+            4. **Tigroid/Tessellated Appearance**: Characteristic pattern in myopic eyes
+            """)
         
         return model
         
     except Exception as e:
-        st.error(f"Error loading analyzer: {str(e)}")
-        return create_model()
+        st.error(f"Error loading model: {str(e)}")
+        # Fallback to traditional analyzer
+        return create_model(use_tensorflow=False)
 
 def predict(model, preprocessed_image):
     """
