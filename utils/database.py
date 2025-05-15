@@ -155,11 +155,21 @@ class Patient(Base):
         }
 
 # Initialize database connection
+# Get the current page
+def get_current_page():
+    """Get the current page from session state if available"""
+    if hasattr(st, 'session_state') and 'page' in st.session_state:
+        return st.session_state.page
+    return None
+
 @st.cache_resource
-def init_db():
+def init_db(_show_messages=False):
     """
     Initialize database connection and create tables if they don't exist.
     Uses DATABASE_URL environment variable for the connection.
+    
+    Args:
+        _show_messages: If True, show status messages. Only set to True in Database Management section.
     
     Returns:
         A dictionary with SQLAlchemy session and engine
@@ -169,22 +179,26 @@ def init_db():
         database_url = os.environ.get('DATABASE_URL')
         
         if database_url is None:
-            st.warning("No database URL found. Please set the DATABASE_URL environment variable.")
-            st.info("Using in-memory SQLite database for now. Your data will not be persisted.")
+            if _show_messages:
+                st.warning("No database URL found. Please set the DATABASE_URL environment variable.")
+                st.info("Using in-memory SQLite database for now. Your data will not be persisted.")
             # Use SQLite for development when no DATABASE_URL is provided
             database_url = "sqlite:///memory:"
         
         # For Supabase PostgreSQL connections, we need to fix the URL format
         if 'supabase' in database_url.lower() or 'pooler.supabase' in database_url.lower():
-            st.info("Detected Supabase PostgreSQL connection")
+            if _show_messages:
+                st.info("Detected Supabase PostgreSQL connection")
             
             try:
                 # Parse and fix the Supabase URL with a specialized function
                 database_url = fix_supabase_url(database_url)
-                st.success("Successfully formatted Supabase connection string")
+                if _show_messages:
+                    st.success("Successfully formatted Supabase connection string")
             except Exception as e:
-                st.error(f"Error formatting database URL: {str(e)}")
-                st.info("You might need to manually format your DATABASE_URL properly")
+                if _show_messages:
+                    st.error(f"Error formatting database URL: {str(e)}")
+                    st.info("You might need to manually format your DATABASE_URL properly")
             
         # Create engine with proper dialect options for PostgreSQL
         if 'postgresql' in database_url.lower():
@@ -194,11 +208,13 @@ def init_db():
                 # Echo SQL for debugging during development
                 echo=True
             )
-            st.info(f"Connected to PostgreSQL database")
+            if _show_messages:
+                st.info(f"Connected to PostgreSQL database")
         else:
             # For other database types (e.g., SQLite)
             engine = create_engine(database_url)
-            st.info(f"Using SQLite database")
+            if _show_messages:
+                st.info(f"Using SQLite database")
             
         Session = sessionmaker(bind=engine)
         
@@ -214,29 +230,31 @@ def init_db():
         import traceback
         error_details = traceback.format_exc()
         
-        # Display error with troubleshooting information
-        st.error(f"Error connecting to database: {str(e)}")
-        st.error("Please check your DATABASE_URL format")
-        
-        # Show some helpful tips
-        st.markdown("""
-        ### Database Connection Troubleshooting:
-        
-        1. For **Supabase**, use the **Transaction Pooler** connection string (URI format)
-        2. Make sure you've replaced `[YOUR-PASSWORD]` with your actual database password
-        3. Check if your Supabase project is active and not in pause state
-        4. Verify that your IP is allowed in Supabase network restrictions
-        
-        **Sample format for Supabase:**
-        ```
-        postgresql://postgres:your_password@db.example.supabase.co:6543/postgres?pgbouncer=true
-        ```
-        
-        **Detailed error:**
-        """)
-        # Show detailed error in an expander (helps with troubleshooting without cluttering the UI)
-        with st.expander("Show detailed error"):
-            st.code(error_details)
+        # Only show error messages if _show_messages is True
+        if _show_messages:
+            # Display error with troubleshooting information
+            st.error(f"Error connecting to database: {str(e)}")
+            st.error("Please check your DATABASE_URL format")
+            
+            # Show some helpful tips
+            st.markdown("""
+            ### Database Connection Troubleshooting:
+            
+            1. For **Supabase**, use the **Transaction Pooler** connection string (URI format)
+            2. Make sure you've replaced `[YOUR-PASSWORD]` with your actual database password
+            3. Check if your Supabase project is active and not in pause state
+            4. Verify that your IP is allowed in Supabase network restrictions
+            
+            **Sample format for Supabase:**
+            ```
+            postgresql://postgres:your_password@db.example.supabase.co:6543/postgres?pgbouncer=true
+            ```
+            
+            **Detailed error:**
+            """)
+            # Show detailed error in an expander (helps with troubleshooting without cluttering the UI)
+            with st.expander("Show detailed error"):
+                st.code(error_details)
             
         # Fallback to in-memory SQLite
         engine = create_engine("sqlite:///memory:")

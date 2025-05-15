@@ -282,10 +282,8 @@ class FundusAnalyzer:
             else:
                 final_score = 0.5
                 
-            # Add a small amount of controlled randomness for variety
-            # but much less than before to keep predictions more consistent
-            random_component = random.uniform(-0.05, 0.05)
-            final_score = max(0, min(1, final_score + random_component))
+            # No randomness - predictions should be 100% consistent for the same image
+            final_score = max(0, min(1, final_score))
             
             # For demonstration purposes, let's make it more decisive
             # This increases the contrast between myopic and non-myopic predictions

@@ -4,7 +4,8 @@ from utils.database import (
     check_db_connection, 
     get_all_predictions, 
     get_all_patients,
-    add_patient
+    add_patient,
+    init_db
 )
 import os
 
@@ -14,6 +15,9 @@ def create_database_mgmt_section():
     """
     st.title("Database Management")
     st.markdown("### View and manage database records")
+    
+    # Initialize database with messages enabled for this section only
+    init_db(_show_messages=True)
     
     # Check database connection
     db_connected = check_db_connection()
