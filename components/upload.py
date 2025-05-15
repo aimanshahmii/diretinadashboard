@@ -5,6 +5,7 @@ from PIL import Image
 import numpy as np
 from utils.image_processing import preprocess_image, validate_fundus_image
 from utils.model import predict
+from utils.database import add_prediction
 
 def create_upload_section():
     """
@@ -45,12 +46,15 @@ def create_upload_section():
                     prediction, confidence = predict(st.session_state.model, preprocessed_image)
                     
                     if prediction is not None:
-                        # Store prediction results
+                        # Store prediction results in session state
                         st.session_state.predictions.append((prediction, confidence))
+                        
+                        # Create timestamp
+                        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                         
                         # Add to history with timestamp
                         st.session_state.prediction_history.append({
-                            'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                            'timestamp': timestamp,
                             'image_name': uploaded_file.name,
                             'prediction': prediction,
                             'confidence': confidence
@@ -59,9 +63,22 @@ def create_upload_section():
                         # Update last upload time
                         st.session_state.last_upload_time = datetime.now()
                         
+                        # Save to database
+                        db_success = add_prediction(
+                            image_name=uploaded_file.name,
+                            prediction=prediction,
+                            confidence=confidence
+                        )
+                        
+                        if db_success:
+                            st.success("Prediction saved to database")
+                        # Note: If db fails, we still have the prediction in session state
+                        
                         # Display result
                         if prediction == 1:
-                            st.error(f"⚠️ Myopia detected with {confidence*100:.1f}% confidence")
+                            # Ensure confidence is a number
+                            conf_value = float(confidence) if confidence is not None else 0.0
+                            st.error(f"⚠️ Myopia detected with {conf_value*100:.1f}% confidence")
                             
                             # Additional information for myopia
                             with st.expander("What is Myopia?"):
@@ -80,7 +97,9 @@ def create_upload_section():
                                 - In some cases, refractive surgery
                                 """)
                         else:
-                            st.success(f"✅ Normal eye detected with {confidence*100:.1f}% confidence")
+                            # Ensure confidence is a number
+                            conf_value = float(confidence) if confidence is not None else 0.0
+                            st.success(f"✅ Normal eye detected with {conf_value*100:.1f}% confidence")
                     else:
                         st.error("Error making prediction. Please try again.")
                 else:

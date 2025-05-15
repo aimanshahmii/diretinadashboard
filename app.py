@@ -32,6 +32,10 @@ if "training_data" not in st.session_state:
     st.session_state.training_data = None
 if "last_upload_time" not in st.session_state:
     st.session_state.last_upload_time = None
+if "show_db_config" not in st.session_state:
+    st.session_state.show_db_config = False
+if "db_url" not in st.session_state:
+    st.session_state.db_url = None
 
 # Load model
 @st.cache_resource
@@ -44,7 +48,7 @@ def main():
     with st.sidebar:
         st.title("DiRetina Dashboard")
         st.markdown("### Navigation")
-        page = st.radio("Go to", ["Dashboard", "Upload & Predict", "Visualizations", "Model Training"])
+        page = st.radio("Go to", ["Dashboard", "Upload & Predict", "Visualizations", "Database Management", "Model Training"])
         
         st.markdown("---")
         st.markdown("### About")
@@ -81,6 +85,9 @@ def main():
     
     elif page == "Visualizations":
         create_visualization_section()
+        
+    elif page == "Database Management":
+        create_database_mgmt_section()
     
     elif page == "Model Training":
         st.title("Model Training")
