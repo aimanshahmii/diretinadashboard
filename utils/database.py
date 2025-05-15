@@ -45,6 +45,31 @@ def fix_supabase_url(url):
             
             # Reconstruct with proper URL encoding for the password
             encoded_password = urllib.parse.quote_plus(password)
+            
+            # Make sure we're using the pooler hostname and correct port
+            if 'pooler.supabase' not in host_part and ':6543' not in host_part:
+                # This might be using the direct hostname instead of pooler
+                st.warning("Detected non-pooler hostname, attempting to fix")
+                
+                # Try to extract the project ID from the hostname
+                if '.' in host_part:
+                    parts = host_part.split('.')
+                    project_id = None
+                    for part in parts:
+                        if len(part) > 10 and not part.startswith('supabase'):
+                            project_id = part
+                            break
+                    
+                    if project_id:
+                        # Replace with proper pooler hostname
+                        host_part = f"aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+                        st.info(f"Using pooler hostname: {host_part}")
+            
+            # Ensure we're using pgbouncer=true for pooler connections
+            if 'pooler.supabase' in host_part and '?' not in host_part:
+                host_part = host_part + "?pgbouncer=true"
+                st.info("Added pgbouncer=true parameter")
+                
             fixed_url = f"{protocol_user}:{encoded_password}@{host_part}"
             
             # Add postgresql:// if it was stripped
