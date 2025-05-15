@@ -63,11 +63,12 @@ def create_upload_section():
                         # Update last upload time
                         st.session_state.last_upload_time = datetime.now()
                         
-                        # Save to database
+                        # Save to database - don't show error messages here
                         db_success = add_prediction(
                             image_name=uploaded_file.name,
                             prediction=prediction,
-                            confidence=confidence
+                            confidence=confidence,
+                            _show_messages=False
                         )
                         
                         if db_success:

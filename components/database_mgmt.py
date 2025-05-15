@@ -20,7 +20,7 @@ def create_database_mgmt_section():
     init_db(_show_messages=True)
     
     # Check database connection
-    db_connected = check_db_connection()
+    db_connected = check_db_connection(_show_messages=True)
     
     if db_connected:
         st.success("✅ Connected to database")

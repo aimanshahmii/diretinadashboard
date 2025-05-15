@@ -268,7 +268,7 @@ def init_db(_show_messages=False):
         }
 
 # Function to add a prediction to the database
-def add_prediction(image_name, prediction, confidence, notes=None):
+def add_prediction(image_name, prediction, confidence, notes=None, _show_messages=False):
     """
     Add a prediction record to the database
     
@@ -277,12 +277,13 @@ def add_prediction(image_name, prediction, confidence, notes=None):
         prediction: 0 for normal, 1 for myopia
         confidence: Confidence score (0-1)
         notes: Optional notes about the prediction
+        _show_messages: If True, show status messages
         
     Returns:
         True if successful, False otherwise
     """
     try:
-        db = init_db()
+        db = init_db(_show_messages=_show_messages)
         session = db['Session']()
         
         new_prediction = Prediction(
@@ -297,19 +298,23 @@ def add_prediction(image_name, prediction, confidence, notes=None):
         session.close()
         return True
     except Exception as e:
-        st.error(f"Error adding prediction to database: {str(e)}")
+        if _show_messages:
+            st.error(f"Error adding prediction to database: {str(e)}")
         return False
 
 # Function to get all predictions from the database
-def get_all_predictions():
+def get_all_predictions(_show_messages=False):
     """
     Get all predictions from the database
+    
+    Args:
+        _show_messages: If True, show status messages
     
     Returns:
         Pandas DataFrame with all predictions
     """
     try:
-        db = init_db()
+        db = init_db(_show_messages=_show_messages)
         session = db['Session']()
         
         predictions = session.query(Prediction).all()
@@ -326,7 +331,8 @@ def get_all_predictions():
                 'prediction': [], 'confidence': [], 'notes': []
             })
     except Exception as e:
-        st.error(f"Error retrieving predictions from database: {str(e)}")
+        if _show_messages:
+            st.error(f"Error retrieving predictions from database: {str(e)}")
         # Use dictionary to create empty DataFrame with proper columns
         return pd.DataFrame({
             'id': [], 'timestamp': [], 'image_name': [], 
@@ -367,15 +373,18 @@ def add_patient(patient_id, name=None, age=None, gender=None):
         return False
 
 # Function to get all patients from the database
-def get_all_patients():
+def get_all_patients(_show_messages=False):
     """
     Get all patients from the database
     
+    Args:
+        _show_messages: If True, show status messages
+        
     Returns:
         Pandas DataFrame with all patients
     """
     try:
-        db = init_db()
+        db = init_db(_show_messages=_show_messages)
         session = db['Session']()
         
         patients = session.query(Patient).all()
@@ -392,7 +401,8 @@ def get_all_patients():
                 'age': [], 'gender': [], 'created_at': []
             })
     except Exception as e:
-        st.error(f"Error retrieving patients from database: {str(e)}")
+        if _show_messages:
+            st.error(f"Error retrieving patients from database: {str(e)}")
         # Use dictionary to create empty DataFrame with proper columns
         return pd.DataFrame({
             'id': [], 'patient_id': [], 'name': [], 
@@ -400,15 +410,18 @@ def get_all_patients():
         })
 
 # Function to check database connection
-def check_db_connection():
+def check_db_connection(_show_messages=False):
     """
     Check if the database connection is working
+    
+    Args:
+        _show_messages: If True, show status messages. Only set to True in Database Management section.
     
     Returns:
         True if connection is successful, False otherwise
     """
     try:
-        db = init_db()
+        db = init_db(_show_messages=_show_messages)
         engine = db['engine']
         
         # Try a simple query to verify connection
@@ -431,6 +444,7 @@ def check_db_connection():
     except Exception as e:
         # Log the error for troubleshooting
         import traceback
-        print(f"Database connection error: {str(e)}")
-        print(traceback.format_exc())
+        if _show_messages:  # Only print detailed error if messages are enabled
+            print(f"Database connection error: {str(e)}")
+            print(traceback.format_exc())
         return False
