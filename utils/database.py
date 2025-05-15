@@ -295,7 +295,9 @@ def check_db_connection():
         
         # Try a simple query to verify connection
         with engine.connect() as conn:
-            result = conn.execute("SELECT 1")
+            # SQLAlchemy 2.0 requires using text() for raw SQL
+            from sqlalchemy import text
+            result = conn.execute(text("SELECT 1"))
             result.fetchone()  # Actually fetch the data to confirm connection works
             
         # Get database type for information
