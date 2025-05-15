@@ -332,37 +332,36 @@ def load_model():
         A model instance (either TensorFlow or traditional)
     """
     try:
-        st.info("Initializing DiRetina TensorFlow-powered Fundus Analyzer")
+        # Start with traditional model due to TensorFlow compatibility issues
+        use_tensorflow = False  # Disabling TensorFlow due to compatibility issues
         
-        # Attempt to use TensorFlow model
-        model = create_model(use_tensorflow=True)
-        
-        # If we're using the TensorFlow model
-        if isinstance(model, TensorFlowFundusModel):
-            st.success("Using TensorFlow deep learning model for analysis")
+        if use_tensorflow:
+            st.info("Initializing DiRetina TensorFlow-powered Fundus Analyzer")
+            # Attempt to use TensorFlow model
+            model = create_model(use_tensorflow=True)
             
-            # Display info about the TensorFlow model
-            st.markdown("""
-            ### DiRetina TensorFlow Analysis Features:
-            
-            1. **Deep Neural Network Analysis**: Powered by MobileNetV2 architecture
-            2. **Transfer Learning**: Leverages pre-trained image recognition capabilities
-            3. **High Dimensional Feature Analysis**: Identifies complex patterns in fundus images
-            4. **Advanced Classification**: Uses deep learning for binary classification
-            """)
+            # If we're using the TensorFlow model
+            if isinstance(model, TensorFlowFundusModel):
+                st.success("Using TensorFlow deep learning model for analysis")
+                
+                # Display info about the TensorFlow model
+                st.markdown("""
+                ### DiRetina TensorFlow Analysis Features:
+                
+                1. **Deep Neural Network Analysis**: Powered by MobileNetV2 architecture
+                2. **Transfer Learning**: Leverages pre-trained image recognition capabilities
+                3. **High Dimensional Feature Analysis**: Identifies complex patterns in fundus images
+                4. **Advanced Classification**: Uses deep learning for binary classification
+                """)
+            else:
+                # Fallback if TF is enabled but fails
+                model = create_model(use_tensorflow=False)
+                _display_traditional_model_info()
         else:
-            # We're using the traditional model (fallback)
-            st.warning("Using traditional image analysis (TensorFlow unavailable)")
-            
-            # Display info about the traditional analysis
-            st.markdown("""
-            ### DiRetina Analyzer looks for these myopia indicators:
-            
-            1. **Optic Disc Size**: Smaller optic disc can indicate myopia
-            2. **Blood Vessel Patterns**: Increased tortuosity in myopic eyes
-            3. **Peripheral Retinal Thinning**: Common in myopia
-            4. **Tigroid/Tessellated Appearance**: Characteristic pattern in myopic eyes
-            """)
+            # We're using the traditional model by default
+            model = create_model(use_tensorflow=False)
+            st.info("Initializing DiRetina Traditional Fundus Analyzer")
+            _display_traditional_model_info()
         
         return model
         
@@ -370,6 +369,21 @@ def load_model():
         st.error(f"Error loading model: {str(e)}")
         # Fallback to traditional analyzer
         return create_model(use_tensorflow=False)
+
+def _display_traditional_model_info():
+    """Display information about the traditional model"""
+    # We're using the traditional model (fallback)
+    st.success("Using advanced image analysis for fundus evaluation")
+    
+    # Display info about the traditional analysis
+    st.markdown("""
+    ### DiRetina Analyzer looks for these myopia indicators:
+    
+    1. **Optic Disc Size**: Smaller optic disc can indicate myopia
+    2. **Blood Vessel Patterns**: Increased tortuosity in myopic eyes
+    3. **Peripheral Retinal Thinning**: Common in myopia
+    4. **Tigroid/Tessellated Appearance**: Characteristic pattern in myopic eyes
+    """)
 
 def predict(model, preprocessed_image):
     """
