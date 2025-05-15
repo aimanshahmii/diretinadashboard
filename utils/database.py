@@ -71,8 +71,35 @@ def init_db():
             # Use SQLite for development when no DATABASE_URL is provided
             database_url = "sqlite:///memory:"
         
-        # Create engine and session
-        engine = create_engine(database_url)
+        # For Supabase PostgreSQL connections, we need to make some adjustments
+        if 'supabase' in database_url.lower() or 'pgbouncer=true' in database_url.lower():
+            st.info("Detected Supabase PostgreSQL connection")
+            
+            # Add required parameters for SQLAlchemy to work properly with pgbouncer
+            if '?' in database_url:
+                # There are already query parameters, add to them
+                database_url += "&prepare=true"
+            else:
+                # No query parameters yet, add the first one
+                database_url += "?prepare=true"
+
+            st.info("Using Supabase Transaction Pooler connection")
+            
+        # Create engine with proper dialect options for PostgreSQL
+        if 'postgresql' in database_url.lower():
+            # Connect with proper options for PostgreSQL
+            engine = create_engine(
+                database_url,
+                connect_args={
+                    "options": "-c timezone=utc",
+                },
+                # Echo SQL for debugging
+                echo=True
+            )
+        else:
+            # For other database types (e.g., SQLite)
+            engine = create_engine(database_url)
+            
         Session = sessionmaker(bind=engine)
         
         # Create tables if they don't exist
@@ -83,11 +110,40 @@ def init_db():
             'Session': Session
         }
     except Exception as e:
+        # Get more detailed error information
+        import traceback
+        error_details = traceback.format_exc()
+        
+        # Display error with troubleshooting information
         st.error(f"Error connecting to database: {str(e)}")
+        st.error("Please check your DATABASE_URL format")
+        
+        # Show some helpful tips
+        st.markdown("""
+        ### Database Connection Troubleshooting:
+        
+        1. For **Supabase**, use the **Transaction Pooler** connection string (URI format)
+        2. Make sure you've replaced `[YOUR-PASSWORD]` with your actual database password
+        3. Check if your Supabase project is active and not in pause state
+        4. Verify that your IP is allowed in Supabase network restrictions
+        
+        **Sample format for Supabase:**
+        ```
+        postgresql://postgres:your_password@db.example.supabase.co:6543/postgres?pgbouncer=true
+        ```
+        
+        **Detailed error:**
+        """)
+        # Show detailed error in an expander (helps with troubleshooting without cluttering the UI)
+        with st.expander("Show detailed error"):
+            st.code(error_details)
+            
         # Fallback to in-memory SQLite
         engine = create_engine("sqlite:///memory:")
         Session = sessionmaker(bind=engine)
         Base.metadata.create_all(engine)
+        
+        # Return the fallback engine and session
         return {
             'engine': engine,
             'Session': Session
@@ -237,11 +293,24 @@ def check_db_connection():
         db = init_db()
         engine = db['engine']
         
-        # Try a simple query
+        # Try a simple query to verify connection
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            result = conn.execute("SELECT 1")
+            result.fetchone()  # Actually fetch the data to confirm connection works
             
+        # Get database type for information
+        db_type = "PostgreSQL" if 'postgresql' in str(engine.url).lower() else "SQLite"
+        
+        # If it's SQLite in-memory, we're using the fallback
+        if db_type == "SQLite" and ':memory:' in str(engine.url) or 'sqlite:///memory:' in str(engine.url):
+            # We're using the fallback SQLite database
+            return False
+            
+        # Connection successful
         return True
     except Exception as e:
-        st.error(f"Database connection error: {str(e)}")
+        # Log the error for troubleshooting
+        import traceback
+        print(f"Database connection error: {str(e)}")
+        print(traceback.format_exc())
         return False
