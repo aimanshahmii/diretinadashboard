@@ -8,7 +8,7 @@ from components.upload import create_upload_section
 from components.visualization import create_visualization_section
 from components.database_mgmt import create_database_mgmt_section
 from components.heatmap_view import create_heatmap_view
-from utils.model import load_model, train_model
+from utils.model import load_model
 from utils.image_processing import preprocess_image
 from utils.local_database import (
     add_local_prediction as add_prediction,
@@ -91,7 +91,7 @@ def main():
     with st.sidebar:
         st.title("DiRetina Dashboard")
         st.markdown("### Navigation")
-        page = st.radio("Go to", ["Dashboard", "Upload & Predict", "Visualizations", "Heatmap Analysis", "Database Management", "Model Training"])
+        page = st.radio("Go to", ["Dashboard", "Upload & Predict", "Visualizations", "Heatmap Analysis", "Database Management"])
         
         st.markdown("---")
         st.markdown("### About")
@@ -140,33 +140,7 @@ def main():
     elif page == "Database Management":
         create_database_mgmt_section()
     
-    elif page == "Model Training":
-        st.title("Model Training")
-        st.markdown("""
-        This section allows you to train the DiRetina model with new data.
-        Upload a CSV file with labels and a folder with corresponding images.
-        """)
-        
-        # Upload training data
-        training_data = st.file_uploader("Upload CSV file with labels", type="csv")
-        if training_data:
-            try:
-                training_df = pd.read_csv(training_data)
-                st.session_state.training_data = training_df
-                st.write("Training data preview:")
-                st.dataframe(training_df.head())
-                
-                if st.button("Train Model"):
-                    if "Filename" in training_df.columns and "Label" in training_df.columns:
-                        with st.spinner("Training model... This may take a few minutes."):
-                            # In a real application, we would handle the image files here
-                            # For this demo, we'll simulate the training process
-                            st.session_state.model = train_model(training_df)
-                            st.success("Model training completed!")
-                    else:
-                        st.error("CSV file must contain 'Filename' and 'Label' columns")
-            except Exception as e:
-                st.error(f"Error loading training data: {e}")
+
 
 if __name__ == "__main__":
     main()
