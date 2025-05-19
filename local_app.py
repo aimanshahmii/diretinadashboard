@@ -36,7 +36,7 @@ SQLITE_DB_PATH = "diretina.db"
 
 # Page configuration
 st.set_page_config(
-    page_title="DiRetina Dashboard (Local SQLite)",
+    page_title="DiRetina Dashboard",
     page_icon="👁️",
     layout="wide",
     initial_sidebar_state="expanded"
