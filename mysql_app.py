@@ -84,7 +84,7 @@ def main():
     with st.sidebar:
         st.title("DiRetina Dashboard")
         st.markdown("### Navigation")
-        page = st.radio("Go to", ["Dashboard", "Upload & Predict", "Visualizations", "Heatmap Analysis", "Database Management"])
+        page = st.radio("Go to", ["Dashboard", "Upload & Predict", "Visualizations", "Heatmap Analysis"])
         
         st.markdown("---")
         st.markdown("### About")
@@ -150,8 +150,7 @@ def main():
     elif page == "Heatmap Analysis":
         create_heatmap_view()
         
-    elif page == "Database Management":
-        create_database_mgmt_section()
+
 
 if __name__ == "__main__":
     main()
