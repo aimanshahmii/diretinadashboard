@@ -418,43 +418,4 @@ def predict(model, preprocessed_image):
         st.error(f"Error during prediction: {str(e)}")
         return None, None
 
-def train_model(training_data):
-    """
-    Simulate training the model with new data
-    
-    Args:
-        training_data: DataFrame with 'Filename' and 'Label' columns
-        
-    Returns:
-        Trained model
-    """
-    # Create a new model instance
-    model = create_model()
-    
-    # Log training progress for user feedback
-    st.text("Training progress:")
-    progress_bar = st.progress(0)
-    status_text = st.empty()
-    
-    # Simulate epochs
-    epochs = 5
-    for i in range(epochs):
-        # Update progress
-        progress = (i + 1) / epochs
-        progress_bar.progress(progress)
-        status_text.text(f"Epoch {i+1}/{epochs}")
-        
-        # Simulate accuracy and loss improvements
-        accuracy = 0.5 + (i * 0.1)
-        loss = 0.5 - (i * 0.08)
-        
-        st.text(f"Epoch {i+1}: accuracy={accuracy:.4f}, loss={loss:.4f}")
-        
-        # Simulate delay
-        time.sleep(0.5)
-    
-    # Final update
-    progress_bar.progress(1.0)
-    status_text.text("Training complete!")
-    
-    return model
+

@@ -51,7 +51,6 @@ if "app_version" not in st.session_state:
     st.session_state.predictions = []
     st.session_state.prediction_history = []
     st.session_state.model = None
-    st.session_state.training_data = None
     st.session_state.last_upload_time = None
     st.session_state.show_db_config = False
     st.session_state.db_url = None
@@ -67,8 +66,6 @@ else:
         st.session_state.prediction_history = []
     if "model" not in st.session_state:
         st.session_state.model = None
-    if "training_data" not in st.session_state:
-        st.session_state.training_data = None
     if "last_upload_time" not in st.session_state:
         st.session_state.last_upload_time = None
     if "show_db_config" not in st.session_state:
