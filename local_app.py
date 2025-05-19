@@ -6,7 +6,7 @@ from datetime import datetime
 from components.dashboard import create_dashboard
 from components.upload import create_upload_section
 from components.visualization import create_visualization_section
-from components.database_mgmt import create_database_mgmt_section
+
 from components.heatmap_view import create_heatmap_view
 from utils.model import load_model
 from utils.image_processing import preprocess_image
@@ -88,7 +88,7 @@ def main():
     with st.sidebar:
         st.title("DiRetina Dashboard")
         st.markdown("### Navigation")
-        page = st.radio("Go to", ["Dashboard", "Upload & Predict", "Visualizations", "Heatmap Analysis", "Database Management"])
+        page = st.radio("Go to", ["Dashboard", "Upload & Predict", "Visualizations", "Heatmap Analysis"])
         
         st.markdown("---")
         st.markdown("### About")
@@ -134,8 +134,7 @@ def main():
     elif page == "Heatmap Analysis":
         create_heatmap_view()
         
-    elif page == "Database Management":
-        create_database_mgmt_section()
+
     
 
 

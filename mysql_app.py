@@ -6,7 +6,7 @@ from datetime import datetime
 from components.dashboard import create_dashboard
 from components.upload import create_upload_section
 from components.visualization import create_visualization_section
-from components.database_mgmt import create_database_mgmt_section
+
 from components.heatmap_view import create_heatmap_view
 from utils.model import load_model
 from utils.image_processing import preprocess_image
