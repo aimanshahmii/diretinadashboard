@@ -92,9 +92,7 @@ def create_upload_section():
                             _show_messages=False
                         )
                         
-                        if db_success:
-                            st.success(f"Prediction for {uploaded_file.name} saved to database")
-                        # Note: If db fails, we still have the prediction in session state
+                        # We still have the prediction in session state even if database connection fails
                         
                         # Display result
                         if prediction == 1:
