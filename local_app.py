@@ -97,10 +97,10 @@ def main():
             "Upload images to get predictions and visualize trends."
         )
         
-        # Show local database info
+        # Show database info
         st.markdown("---")
-        st.markdown("### Local Database")
-        st.info(f"Using SQLite database: {SQLITE_DB_PATH}")
+        st.markdown("### MySQL Database")
+        st.info("Connected to MySQL database")
         
         # Display sample fundus images
         with st.expander("Sample Fundus Images"):

@@ -9,24 +9,34 @@ import pandas as pd
 # Import the database models from the original database.py
 from utils.database import Base, Prediction, Patient
 
+# MySQL connection configuration
+# Modify these settings to match your MySQL Workbench setup
+MYSQL_CONFIG = {
+    'host': 'localhost',
+    'port': 3306,
+    'database': 'diretina',
+    'username': 'root',  # Change this to your MySQL username
+    'password': '',      # Change this to your MySQL password
+}
+
 @st.cache_resource
 def init_local_db(db_path="diretina.db", _show_messages=False):
     """
-    Initialize a local SQLite database connection.
+    Initialize a MySQL database connection.
     
     Args:
-        db_path: Path to SQLite database file (default: diretina.db in current directory)
+        db_path: Not used for MySQL (kept for compatibility)
         _show_messages: If True, show status messages
     
     Returns:
         A dictionary with SQLAlchemy session and engine
     """
     try:
-        # Create SQLite database URL
-        database_url = f"sqlite:///{db_path}"
+        # Create MySQL database URL
+        database_url = f"mysql+pymysql://{MYSQL_CONFIG['username']}:{MYSQL_CONFIG['password']}@{MYSQL_CONFIG['host']}:{MYSQL_CONFIG['port']}/{MYSQL_CONFIG['database']}"
         
         if _show_messages:
-            st.info(f"Using local SQLite database at: {db_path}")
+            st.info(f"Connecting to MySQL database: {MYSQL_CONFIG['database']} on {MYSQL_CONFIG['host']}")
             
         # Create engine
         engine = create_engine(database_url, echo=False)
@@ -36,41 +46,30 @@ def init_local_db(db_path="diretina.db", _show_messages=False):
         Base.metadata.create_all(engine)
         
         if _show_messages:
-            st.success("Successfully connected to local SQLite database")
+            st.success("Successfully connected to MySQL database!")
             
         return {
             'engine': engine,
             'Session': Session
         }
     except Exception as e:
-        # Only show error messages if _show_messages is True
         if _show_messages:
-            st.error(f"Error connecting to local database: {str(e)}")
+            st.error(f"Error connecting to MySQL database: {str(e)}")
+            st.error("Please check your MySQL connection settings in the MYSQL_CONFIG section of local_database.py")
             
-        # Fallback to in-memory SQLite if file access fails
-        if _show_messages:
-            st.warning("Falling back to in-memory SQLite database. Your data will not be persisted.")
-            
-        engine = create_engine("sqlite:///memory:")
-        Session = sessionmaker(bind=engine)
-        Base.metadata.create_all(engine)
-        
-        return {
-            'engine': engine,
-            'Session': Session
-        }
+        return None
 
 # Function to add a prediction to the local database
 def add_local_prediction(image_name, prediction, confidence, notes=None, db_path="diretina.db", _show_messages=False):
     """
-    Add a prediction record to the local database
+    Add a prediction record to the MySQL database
     
     Args:
         image_name: Name of the image file
         prediction: 0 for normal, 1 for myopia
         confidence: Confidence score (0-1)
         notes: Optional notes about the prediction
-        db_path: Path to SQLite database file
+        db_path: Not used for MySQL (kept for compatibility)
         _show_messages: If True, show status messages
         
     Returns:
@@ -78,6 +77,9 @@ def add_local_prediction(image_name, prediction, confidence, notes=None, db_path
     """
     try:
         db = init_local_db(db_path=db_path, _show_messages=_show_messages)
+        if db is None:
+            return False
+            
         session = db['Session']()
         
         new_prediction = Prediction(
@@ -93,7 +95,7 @@ def add_local_prediction(image_name, prediction, confidence, notes=None, db_path
         return True
     except Exception as e:
         if _show_messages:
-            st.error(f"Error adding prediction to local database: {str(e)}")
+            st.error(f"Error adding prediction to MySQL database: {str(e)}")
         return False
 
 # Function to get all predictions from the local database
