@@ -101,10 +101,10 @@ def add_local_prediction(image_name, prediction, confidence, notes=None, db_path
 # Function to get all predictions from the local database
 def get_all_local_predictions(db_path="diretina.db", _show_messages=False):
     """
-    Get all predictions from the local database
+    Get all predictions from the MySQL database
     
     Args:
-        db_path: Path to SQLite database file
+        db_path: Not used for MySQL (kept for compatibility)
         _show_messages: If True, show status messages
     
     Returns:
@@ -112,6 +112,12 @@ def get_all_local_predictions(db_path="diretina.db", _show_messages=False):
     """
     try:
         db = init_local_db(db_path=db_path, _show_messages=_show_messages)
+        if db is None:
+            return pd.DataFrame({
+                'id': [], 'timestamp': [], 'image_name': [], 
+                'prediction': [], 'confidence': [], 'notes': []
+            })
+            
         session = db['Session']()
         
         predictions = session.query(Prediction).all()
@@ -129,7 +135,7 @@ def get_all_local_predictions(db_path="diretina.db", _show_messages=False):
             })
     except Exception as e:
         if _show_messages:
-            st.error(f"Error retrieving predictions from local database: {str(e)}")
+            st.error(f"Error retrieving predictions from MySQL database: {str(e)}")
         # Return empty DataFrame with proper columns
         return pd.DataFrame({
             'id': [], 'timestamp': [], 'image_name': [], 
@@ -139,14 +145,14 @@ def get_all_local_predictions(db_path="diretina.db", _show_messages=False):
 # Function to add a patient to the local database
 def add_local_patient(patient_id, name=None, age=None, gender=None, db_path="diretina.db", _show_messages=False):
     """
-    Add a patient record to the local database
+    Add a patient record to the MySQL database
     
     Args:
         patient_id: Unique patient identifier
         name: Patient name (optional)
         age: Patient age (optional)
         gender: Patient gender (optional)
-        db_path: Path to SQLite database file
+        db_path: Not used for MySQL (kept for compatibility)
         _show_messages: If True, show status messages
         
     Returns:
@@ -154,6 +160,9 @@ def add_local_patient(patient_id, name=None, age=None, gender=None, db_path="dir
     """
     try:
         db = init_local_db(db_path=db_path, _show_messages=_show_messages)
+        if db is None:
+            return False
+            
         session = db['Session']()
         
         new_patient = Patient(
@@ -169,16 +178,16 @@ def add_local_patient(patient_id, name=None, age=None, gender=None, db_path="dir
         return True
     except Exception as e:
         if _show_messages:
-            st.error(f"Error adding patient to local database: {str(e)}")
+            st.error(f"Error adding patient to MySQL database: {str(e)}")
         return False
 
 # Function to get all patients from the local database
 def get_all_local_patients(db_path="diretina.db", _show_messages=False):
     """
-    Get all patients from the local database
+    Get all patients from the MySQL database
     
     Args:
-        db_path: Path to SQLite database file
+        db_path: Not used for MySQL (kept for compatibility)
         _show_messages: If True, show status messages
         
     Returns:
@@ -186,6 +195,12 @@ def get_all_local_patients(db_path="diretina.db", _show_messages=False):
     """
     try:
         db = init_local_db(db_path=db_path, _show_messages=_show_messages)
+        if db is None:
+            return pd.DataFrame({
+                'id': [], 'patient_id': [], 'name': [], 
+                'age': [], 'gender': [], 'created_at': []
+            })
+            
         session = db['Session']()
         
         patients = session.query(Patient).all()
@@ -203,7 +218,7 @@ def get_all_local_patients(db_path="diretina.db", _show_messages=False):
             })
     except Exception as e:
         if _show_messages:
-            st.error(f"Error retrieving patients from local database: {str(e)}")
+            st.error(f"Error retrieving patients from MySQL database: {str(e)}")
         # Return empty DataFrame with proper columns
         return pd.DataFrame({
             'id': [], 'patient_id': [], 'name': [], 
