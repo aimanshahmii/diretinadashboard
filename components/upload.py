@@ -132,30 +132,7 @@ def create_upload_section():
             "The model analyzes the retinal features to identify signs of myopia."
         )
         
-        # Example images
-        st.markdown("### Example Fundus Images")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.image(
-                "https://images.unsplash.com/photo-1564367133818-6ac5df7debfc",
-                caption="Fundus Example 1",
-                width=200
-            )
-        
-        with col2:
-            st.image(
-                "https://images.unsplash.com/photo-1486649567693-aaa9b2e59385",
-                caption="Fundus Example 2",
-                width=200
-            )
-        
-        with col3:
-            st.image(
-                "https://images.unsplash.com/photo-1635012861357-4742bd877c0c",
-                caption="Fundus Example 3",
-                width=200
-            )
+
     
     # Show tips for good fundus images
     with st.expander("Tips for Good Fundus Images"):

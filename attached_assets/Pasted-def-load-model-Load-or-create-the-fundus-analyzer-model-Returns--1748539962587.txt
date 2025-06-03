@@ -1,0 +1,88 @@
+def load_model():
+    """
+    Load or create the fundus analyzer model
+    
+    Returns:
+        A model instance (either TensorFlow or traditional)
+    """
+    try:
+        # Start with traditional model due to TensorFlow compatibility issues
+        use_tensorflow = False  # Disabling TensorFlow due to compatibility issues
+        
+        if use_tensorflow:
+            st.info("Initializing DiRetina TensorFlow-powered Fundus Analyzer")
+            # Attempt to use TensorFlow model
+            model = create_model(use_tensorflow=True)
+            
+            # If we're using the TensorFlow model
+            if isinstance(model, TensorFlowFundusModel):
+                st.success("Using TensorFlow deep learning model for analysis")
+                
+                # Display info about the TensorFlow model
+                st.markdown("""
+                ### DiRetina TensorFlow Analysis Features:
+                
+                1. **Deep Neural Network Analysis**: Powered by MobileNetV2 architecture
+                2. **Transfer Learning**: Leverages pre-trained image recognition capabilities
+                3. **High Dimensional Feature Analysis**: Identifies complex patterns in fundus images
+                4. **Advanced Classification**: Uses deep learning for binary classification
+                """)
+            else:
+                # Fallback if TF is enabled but fails
+                model = create_model(use_tensorflow=False)
+                _display_traditional_model_info()
+        else:
+            # We're using the traditional model by default
+            model = create_model(use_tensorflow=False)
+            st.info("Initializing DiRetina Traditional Fundus Analyzer")
+            _display_traditional_model_info()
+        
+        return model
+        
+    except Exception as e:
+        st.error(f"Error loading model: {str(e)}")
+        # Fallback to traditional analyzer
+        return create_model(use_tensorflow=False)
+
+def _display_traditional_model_info():
+    """Display information about the traditional model"""
+    # We're using the traditional model (fallback)
+    st.success("Using advanced image analysis for fundus evaluation")
+    
+    # Display info about the traditional analysis
+    st.markdown("""
+    ### DiRetina Analyzer looks for these myopia indicators:
+    
+    1. **Optic Disc Size**: Smaller optic disc can indicate myopia
+    2. **Blood Vessel Patterns**: Increased tortuosity in myopic eyes
+    3. **Peripheral Retinal Thinning**: Common in myopia
+    4. **Tigroid/Tessellated Appearance**: Characteristic pattern in myopic eyes
+    """)
+
+def predict(model, preprocessed_image):
+    """
+    Make a prediction using the model
+    
+    Args:
+        model: Model instance
+        preprocessed_image: Preprocessed image tensor
+        
+    Returns:
+        prediction: 1 for myopia, 0 for normal
+        confidence: Prediction confidence score
+    """
+    try:
+        # Get raw prediction
+        prediction_value = model.predict(preprocessed_image)
+        
+        # Convert to binary prediction and confidence
+        # Use the standard threshold (0.5) for balanced predictions
+        prediction_threshold = 0.5
+        binary_prediction = 1 if prediction_value >= prediction_threshold else 0
+        confidence = prediction_value if binary_prediction == 1 else 1 - prediction_value
+        
+        return binary_prediction, float(confidence)
+    
+    except Exception as e:
+        st.error(f"Error during prediction: {str(e)}")
+        return None, None
