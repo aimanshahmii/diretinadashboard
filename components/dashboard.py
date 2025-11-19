@@ -97,11 +97,10 @@ def create_dashboard():
             history_df['Confidence'] = history_df['confidence'].apply(lambda x: f"{x*100:.1f}%")
             
             # Show the recent predictions
-            st.dataframe(
-                history_df[['timestamp', 'image_name', 'Diagnosis', 'Confidence']].rename(
-                    columns={'timestamp': 'Time', 'image_name': 'Image'}
-                ).sort_values('Time', ascending=False)
+            display_df = history_df[['timestamp', 'image_name', 'Diagnosis', 'Confidence']].rename(
+                columns={'timestamp': 'Time', 'image_name': 'Image'}
             )
+            st.dataframe(display_df.sort_values('Time', ascending=False))
         else:
             st.info("No prediction history available. Upload images to start analyzing.")
     else:

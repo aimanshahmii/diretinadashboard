@@ -46,11 +46,11 @@ class TensorFlowFundusModel:
                 # Import TensorFlow
                 import tensorflow as tf
                 
-                # Import Keras components
-                from tensorflow.keras.models import Sequential, Model, load_model
-                from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
-                from tensorflow.keras.applications import MobileNetV2
-                from tensorflow.keras.optimizers import Adam
+                # Import Keras components (Keras 3.x uses standalone imports)
+                from keras.models import Sequential, Model, load_model
+                from keras.layers import Dense, Dropout, GlobalAveragePooling2D
+                from keras.applications import MobileNetV2
+                from keras.optimizers import Adam
                 
                 st.info("Initializing TensorFlow model for fundus image analysis...")
                 self.create_model()
@@ -198,7 +198,7 @@ class TensorFlowFundusModel:
             
             if 'tf' in globals():
                 # Make prediction
-                prediction = self.model.predict(preprocessed, verbose=0)
+                prediction = self.model.predict(preprocessed, verbose="0")
                 
                 # Get the first (and only) prediction value
                 pred_value = prediction[0][0]
@@ -401,7 +401,7 @@ class TensorFlowFundusModel:
                 epochs=epochs,
                 batch_size=batch_size,
                 validation_split=0.2,
-                verbose=1
+                verbose="1"
             )
             
             st.success("Model training completed!")

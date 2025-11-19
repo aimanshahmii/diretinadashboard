@@ -147,8 +147,8 @@ class FundusAnalyzer:
             periphery_mask = np.zeros((h, w), dtype=np.uint8)
             
             # Create circular masks
-            cv2.circle(center_mask, (cx, cy), int(min(h, w) * 0.2), 255, -1)
-            cv2.circle(periphery_mask, (cx, cy), int(min(h, w) * 0.4), 255, -1)
+            cv2.circle(center_mask, (cx, cy), int(min(h, w) * 0.2), (255,), -1)
+            cv2.circle(periphery_mask, (cx, cy), int(min(h, w) * 0.4), (255,), -1)
             periphery_mask = periphery_mask - center_mask
             
             # Get brightness in center vs periphery
