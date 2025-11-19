@@ -74,20 +74,6 @@ def main():
             "DiRetina uses AI to detect myopia and other eye diseases from fundus images. "
             "Upload images to get predictions and visualize trends."
         )
-        
-        # Display sample fundus images
-        with st.expander("Sample Fundus Images"):
-            col1, col2 = st.columns(2)
-            with col1:
-                st.image("https://images.unsplash.com/photo-1635012641245-0adf659dac97", 
-                        caption="Normal Fundus", width=120)
-                st.image("https://images.unsplash.com/photo-1635012861357-4742bd877c0c", 
-                        caption="Myopia Fundus", width=120)
-            with col2:
-                st.image("https://images.unsplash.com/photo-1634982839177-9ccc2cf896c5", 
-                        caption="Normal Fundus", width=120)
-                st.image("https://images.unsplash.com/photo-1634983453360-341a308a5f38", 
-                        caption="Myopia Fundus", width=120)
     
     # Make sure model is loaded
     if st.session_state.model is None:

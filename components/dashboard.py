@@ -106,17 +106,7 @@ def create_dashboard():
             st.info("No prediction history available. Upload images to start analyzing.")
     else:
         # Show empty state with instructions
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            st.info(
-                "No data available yet. Upload fundus images using the 'Upload & Predict' section "
-                "to see visualizations and statistics."
-            )
-        
-        with col2:
-            st.image(
-                "https://images.unsplash.com/photo-1501621667575-af81f1f0bacc",
-                caption="Eye Examination",
-                width=250
-            )
+        st.info(
+            "No data available yet. Upload fundus images using the 'Upload & Predict' section "
+            "to see visualizations and statistics."
+        )
